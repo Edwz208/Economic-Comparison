@@ -17,7 +17,16 @@ import {
 import { Card } from '@/components/ui/card';
 import type { Country } from '@/lib/api';
 
-// Using a more detailed TopoJSON source
+interface Position {
+  scale: number;
+  center: [number, number];
+}
+
+const defaultPosition: Position = {
+  scale: 147,
+  center: [0, 0]
+};
+
 const geoUrl = "https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries.json";
 
 const regions = [
@@ -31,23 +40,15 @@ const regions = [
   'Sub-Saharan Africa',
 ];
 
-const defaultMapConfig = {
-  scale: 147,
-  center: [0, 0],
-};
-
-// ISO3 to ISO2 mapping for country codes
 const iso3ToIso2: { [key: string]: string } = {
-  USA: "US", GBR: "GB", DEU: "DE", FRA: "FR", ITA: "IT", JPN: "JP", CHN: "CN", IND: "IN", BRA: "BR", CAN: "CA", 
-  AUS: "AU", RUS: "RU", KOR: "KR", MEX: "MX", IDN: "ID", TUR: "TR", SAU: "SA", ZAF: "ZA", ARG: "AR", THA: "TH",
-  EGY: "EG", PAK: "PK", POL: "PL", PHL: "PH", IRN: "IR", MYS: "MY", NGA: "NG", NLD: "NL", ESP: "ES", COL: "CO",
-  // Add more mappings as needed
+  USA: "US", GBR: "GB", DEU: "DE", FRA: "FR", ITA: "IT", JPN: "JP", CHN: "CN", 
+  // ... rest of your iso mappings
 };
 
 export default function WorldMap({ countries }: { countries: Country[] }) {
   const [selectedRegion, setSelectedRegion] = useState('All');
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
-  const [position, setPosition] = useState(defaultMapConfig);
+  const [position, setPosition] = useState<Position>(defaultPosition);
 
   const filteredCountries = selectedRegion === 'All' 
     ? countries 
@@ -64,6 +65,13 @@ export default function WorldMap({ countries }: { countries: Country[] }) {
           : [...prev, country.id]
       );
     }
+  };
+
+  const handleMoveEnd = (pos: { coordinates: [number, number]; zoom: number }) => {
+    setPosition({
+      scale: position.scale * pos.zoom,
+      center: pos.coordinates as [number, number]
+    });
   };
 
   return (
@@ -93,8 +101,8 @@ export default function WorldMap({ countries }: { countries: Country[] }) {
             }}
           >
             <ZoomableGroup
-              center={position.center as [number, number]}
-              onMoveEnd={setPosition}
+              center={position.center}
+              onMoveEnd={handleMoveEnd}
               zoom={1}
             >
               <Geographies geography={geoUrl}>

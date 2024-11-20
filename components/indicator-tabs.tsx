@@ -5,7 +5,13 @@ import { Separator } from '@/components/ui/separator';
 import LineChartComponent from '@/components/charts/line-chart';
 import type { Country } from '@/lib/api';
 
-const indicators = {
+interface Indicator {
+  label: string;
+  yAxisLabel: string;
+  tooltipText?: string;
+}
+
+const indicators: Record<string, Indicator> = {
   gdpPerCapita: {
     label: 'GDP per Capita',
     yAxisLabel: 'USD',
@@ -77,13 +83,13 @@ export function IndicatorTabs({
         ))}
       </TabsList>
 
-      {Object.entries(indicators).map(([key, { label, yAxisLabel, tooltipText }]) => (
+      {Object.entries(indicators).map(([key, indicator]) => (
         <TabsContent key={key} value={key}>
           <LineChartComponent
             data={chartData(key as keyof typeof indicators)}
-            title={label}
-            yAxisLabel={yAxisLabel}
-            tooltipText={tooltipText}
+            title={indicator.label}
+            yAxisLabel={indicator.yAxisLabel}
+            tooltipText={indicator.tooltipText ?? indicator.label}
             selectedCountries={selectedCountries}
             countryNames={countryNames}
           />
